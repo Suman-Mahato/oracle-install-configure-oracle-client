@@ -1,2 +1,146 @@
 # oracle-install-configure-oracle-client
 oracle-install-configure-oracle-client
+
+
+Oracle - Installing and Configuring the oracle Client
+---------------------------------------------------
+
+01. Downloading the client software from 
+	https://www.oracle.com/in/database/technologies/oracle19c-windows-downloads.html
+	then select the 	
+	-Download: WINDOWS.X64_193000_client.zip
+
+02. Unzip the software 
+	... \instantclient-basiclite-windows.x64-19.15.0.0.0dbru-2\instantclient_19_15
+	
+03. To Ping tns and connect, Open cmd and write 
+	tnsping YOUR_TNS_NAME
+	
+04. To check the cluster ready service (crsctl) resources
+	-Switch back to grid user then run following command
+	crsctl stat res -t
+
+05. To check server control utility (srvctl) use the following command
+	srvctl status listener -l Your_Lister_Name
+	
+	-Output:
+	Listener LISTENER is enabled
+	Listener LISTENER is running on node(s): dba167
+	
+06. To stop listener
+	srvctl stop listener -l Your_Lister_Name
+	
+	-Now check stutus
+	srvctl status listener -l Your_Lister_Name
+	
+	-Output
+	Listener LISTENER is enabled
+	Listener LISTENER is not running
+	
+	-Let's check listerner status
+	lsnrctl status
+	
+	-Now connect with tns by cmd in windows
+	sqlplus sys/sys123@dba167_vm as sysdba;
+	
+	To start listener
+	srvctl start listener -l Your_Lister_Name
+	
+	-to show parameter for grid user
+	show parameter local
+	
+07. Creating tablespace with datafile, size and autoextend on;
+
+before creating the tablespace, let's drop the existing tablespace if exist.
+DROP TABLESPACE DBA167TAB1 
+INCLUDING CONTENTS 
+CASCADE CONSTRAINTS; 
+
+create tablespace dba167tab1
+datafile '+DATA/DBA167/DATAFILE/dba167tab1'
+size 10M
+autoextend on;
+	
+08. Creating table with tablespace 
+create table dba167_info(
+	id number,
+	name varchar2(50)
+)
+tablespace dba167tab1;
+	
+- Inserting values to dba167_info
+insert into dba167_info values(1,'Hasan');
+	
+commit;
+-Note: Tablespace contains secgemnt. The segment means the table of the tablespace.
+	
+09. Checking Segments
+
+-let's see the segment description
+desc dba_segments;
+
+-let's see current status of a segment
+SELECT SEGMENT_NAME,TABLESPACE_NAME,BYTES,EXTENTS,BLOCKS
+FROM   DBA_SEGMENTS 
+WHERE SEGMENT_NAME=UPPER('dba167_info'); --TABLE TABLE
+
+-Note: Each block size consist of 8Kb
+	   Each	EXTENT consist of 64 KB
+	   If tablespace is a Bigfile type then only One Data file allowed Max 128 TB
+
+Now, we will insert more data into dba167_info table or segment
+begin
+for i in 2..99999 loop
+insert into dba167_info values(i,'My Name..'||i);
+end loop;
+commit;
+end;
+/
+
+- let's check table or segment data...
+select *--COUNT(*)
+from dba167_info 
+order by id;
+
+-let's see again the current status of a segment
+SELECT SEGMENT_NAME,TABLESPACE_NAME,BYTES,EXTENTS,BLOCKS
+FROM   DBA_SEGMENTS 
+WHERE SEGMENT_NAME=UPPER('dba167_info'); --TABLE TABLE
+
+-Here we can see the extends and block size increased.
+
+Keys: 
+Oracle - Logical and Physical Database Structuress,
+Oracle - Downloading the client software,
+Oracle - To Ping tns and connect, Open cmd and write 
+Oracle - To check the cluster ready service (crsctl) resources
+Oracle - To check server control utility (srvctl) use the following command
+Oracle - To stop listener
+Oracle - lsnrctl status
+Oracle - Now connect with tns by cmd in windows
+Oracle - show parameter local
+Oracle - Creating tablespace with datafile, size and autoextend on;
+Oracle - DROP TABLESPACE DBA167TAB1 
+Oracle - Checking Segments
+Oracle - desc dba_segments;
+
+
+You can check the content of link of this tutorial in description. 
+hope you guys enjoy this tutorial.
+Thanks for watching.
+
+
+	
+
+	
+
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
